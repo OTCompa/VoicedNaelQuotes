@@ -33,9 +33,13 @@ public unsafe partial class ResourceLoader : IDisposable
 
     private VfxSpawn vfxSpawn;
 
-    public ResourceLoader(ISigScanner sigScanner, IGameInteropProvider hooks, VfxSpawn vfxSpawn)
+    public ResourceLoader(VfxSpawn vfxSpawn)
     {
         this.vfxSpawn = vfxSpawn;
+
+        var hooks = Plugin.GameInteropProvider;
+        var sigScanner = Plugin.SigScanner;
+
         hooks.InitializeFromAttributes(this);
 
         // Replace

@@ -11,24 +11,22 @@ public unsafe class VfxSpawn : IDisposable
     private record struct QueueItem(string path, IGameObject gameObject);
 
     private GameFunctions gameFunctions;
-    private IFramework framework;
     private readonly List<ActorVfx> spawnedVfxes = [];
     private readonly List<QueueItem> vfxSpawnQueue = [];
     private bool despawnVfxes = false;
 
-    public VfxSpawn(GameFunctions gameFunctions, IFramework framework)
+    public VfxSpawn(GameFunctions gameFunctions)
     {
         this.gameFunctions = gameFunctions;
-        this.framework = framework;
 
-        framework.Update += OnFrameworkUpdate;
+        Plugin.Framework.Update += OnFrameworkUpdate;
     }
 
     public void Dispose()
     {
         DespawnAllVfxes();
-        OnFrameworkUpdate(framework);
-        framework.Update -= OnFrameworkUpdate;
+        OnFrameworkUpdate(Plugin.Framework);
+        Plugin.Framework.Update -= OnFrameworkUpdate;
     }
 
     private void OnFrameworkUpdate(IFramework framework)

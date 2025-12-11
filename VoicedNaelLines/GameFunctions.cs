@@ -21,8 +21,11 @@ public class GameFunctions : IDisposable
     public const string ActorVfxCreateSig = "40 53 55 56 57 48 81 EC ?? ?? ?? ?? 0F 29 B4 24 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 84 24 ?? ?? ?? ?? 0F B6 AC 24 ?? ?? ?? ?? 0F 28 F3 49 8B F8";
     public const string ActorVfxRemoveSig = "0F 11 48 10 48 8D 05";
 
-    public GameFunctions(ISigScanner sigScanner, IGameInteropProvider hooks)
+    public GameFunctions()
     {
+        var sigScanner = Plugin.SigScanner;
+        var hooks = Plugin.GameInteropProvider;
+
         var actorVfxCreateAddress = sigScanner.ScanText(ActorVfxCreateSig);
         var actorVfxRemoveAddressTemp = sigScanner.ScanText(ActorVfxRemoveSig) + 7;
         var actorVfxRemoveAddress = Marshal.ReadIntPtr(actorVfxRemoveAddressTemp + Marshal.ReadInt32(actorVfxRemoveAddressTemp) + 4);

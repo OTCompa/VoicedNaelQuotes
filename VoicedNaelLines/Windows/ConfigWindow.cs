@@ -17,7 +17,7 @@ public class ConfigWindow : Window, IDisposable
         Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
                 ImGuiWindowFlags.NoScrollWithMouse;
 
-        Size = new Vector2(232, 90);
+        Size = new Vector2(400, 200);
         SizeCondition = ImGuiCond.Always;
 
         configuration = plugin.Configuration;
@@ -40,6 +40,12 @@ public class ConfigWindow : Window, IDisposable
 
     public override void Draw()
     {
+        var folderValue = configuration.VoiceLineFolder;
+        if (ImGui.InputText("Voice line folder", ref folderValue))
+        {
+            configuration.VoiceLineFolder = folderValue;
+            configuration.Save();
+        }
         // Can't ref a property, so use a local copy
         var configValue = configuration.SomePropertyToBeSavedAndWithADefault;
         if (ImGui.Checkbox("Random Config Bool", ref configValue))

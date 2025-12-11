@@ -4,6 +4,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using System;
 using System.IO;
 using VoicedNaelLines.Interop;
 using VoicedNaelLines.Windows;
@@ -18,17 +19,17 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
-    [PluginService] internal static IGameInteropProvider gameInteropProvider {  get; private set; } = null!;
-    [PluginService] internal static ISigScanner sigScanner { get; private set; } = null!;
-    [PluginService] internal static IFramework framework { get; private set; } = null!;
-    [PluginService] internal static IObjectTable objectTable { get; private set; } = null!;
+    [PluginService] internal static IGameInteropProvider GameInteropProvider {  get; private set; } = null!;
+    [PluginService] internal static ISigScanner SigScanner { get; private set; } = null!;
+    [PluginService] internal static IFramework Framework { get; private set; } = null!;
+    [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
+    [PluginService] internal static IChatGui ChatGui { get; private set; } = null!;
 
-    private const string CommandName = "/pspawnvfx";
-    private const string Command2Name = "/pclearvfx";
-    private const string Command3Name = "/preplacevfx";
-    private const string Command4Name = "/premovevfx";
+    //private const string Command5Name = "/ptest";
     private const string VfxPath = "vfx/common/eff/naelvoicelines.avfx";
-    private const string ScdPath = "sound/vfx/monster8/naelvoicelines.scd";
+    private const ushort UCoBId = 733;
+    private const string LocalVfxFilename = "base_vfx.avfx";
+
     public Configuration Configuration { get; init; }
 
     public readonly WindowSystem WindowSystem = new("VoicedNaelLines");
@@ -37,6 +38,7 @@ public sealed class Plugin : IDalamudPlugin
     private GameFunctions gameFunctions { get; init; }
     private VfxSpawn vfxSpawn { get; init; }
     private ResourceLoader resourceLoader { get; init; }
+    private QuoteHandler QuoteHandler { get; init; }
 
     public Plugin()
     {
@@ -48,25 +50,10 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.AddWindow(ConfigWindow);
         WindowSystem.AddWindow(MainWindow);
 
-        CommandManager.AddHandler(CommandName, new CommandInfo(OnSpawnCommand)
-        {
-            HelpMessage = "A useful message to display in /xlhelp"
-        });
-
-        CommandManager.AddHandler(Command2Name, new CommandInfo(OnRemoveCommand)
-        {
-            HelpMessage = "A useful message to display in /xlhelp"
-        });
-
-        CommandManager.AddHandler(Command3Name, new CommandInfo(OnReplaceCommand)
-        {
-            HelpMessage = "A useful message to display in /xlhelp"
-        });
-
-        CommandManager.AddHandler(Command4Name, new CommandInfo(OnRemoveReplacementCommand)
-        {
-            HelpMessage = "A useful message to display in /xlhelp"
-        });
+        //CommandManager.AddHandler(Command5Name, new CommandInfo(OnTest)
+        //{
+        //    HelpMessage = "A useful message to display in /xlhelp"
+        //});
 
         // Tell the UI system that we want our windows to be drawn throught he window system
         PluginInterface.UiBuilder.Draw += WindowSystem.Draw;
@@ -78,18 +65,20 @@ public sealed class Plugin : IDalamudPlugin
         // Adds another button doing the same but for the main ui of the plugin
         PluginInterface.UiBuilder.OpenMainUi += ToggleMainUi;
 
-        // Add a simple message to the log with level set to information
-        // Use /xllog to open the log window in-game
-        // Example Output: 00:57:54.959 | INF | [SamplePlugin] ===A cool log message from Sample Plugin===
-        Log.Information($"===A cool log message from {PluginInterface.Manifest.Name}===");
 
-        gameFunctions = new GameFunctions(sigScanner, gameInteropProvider);
-        vfxSpawn = new VfxSpawn(gameFunctions, framework);
-        resourceLoader = new ResourceLoader(sigScanner, gameInteropProvider, vfxSpawn);
+        gameFunctions = new GameFunctions();
+        vfxSpawn = new VfxSpawn(gameFunctions);
+        resourceLoader = new ResourceLoader(vfxSpawn);
+        QuoteHandler = new QuoteHandler(this, resourceLoader, vfxSpawn);
+
+        // TODO: need to handle case for plugin init in instance 
+
+        ClientState.TerritoryChanged += OnTerritoryChanged;
     }
 
     public void Dispose()
     {
+        ClientState.TerritoryChanged -= OnTerritoryChanged;
         vfxSpawn.Dispose();
         gameFunctions.Dispose();
 
@@ -103,48 +92,33 @@ public sealed class Plugin : IDalamudPlugin
         ConfigWindow.Dispose();
         MainWindow.Dispose();
 
-        CommandManager.RemoveHandler(Command4Name);
-        CommandManager.RemoveHandler(Command3Name);
-        CommandManager.RemoveHandler(Command2Name);
-        CommandManager.RemoveHandler(CommandName);
+        //CommandManager.RemoveHandler(Command5Name);
     }
+
+    private void OnTerritoryChanged(ushort obj)
+    {
+        if (obj == UCoBId)
+        {
+            resourceLoader.AddFileReplacement(VfxPath, GetResourcePath(PluginInterface, LocalVfxFilename));
+        } else
+        {
+            resourceLoader.RemoveFileReplacement(VfxPath);
+        }
+    }
+
 
     private void OnCommand(string command, string args)
     {
         // In response to the slash command, toggle the display status of our main ui
         MainWindow.Toggle();
     }
-    
-    private void OnSpawnCommand(string command, string args)
-    {
-        if (!resourceLoader.GetReplacePath(VfxPath, out _) || !resourceLoader.GetReplacePath(ScdPath, out _)) return;
-        if (objectTable.LocalPlayer == null) return;
 
-        if (objectTable.LocalPlayer.TargetObject != null)
-        {
-            vfxSpawn.QueueActorVfx(VfxPath, objectTable.LocalPlayer.TargetObject);
-        } else
-        {
-            vfxSpawn.QueueActorVfx(VfxPath, objectTable.LocalPlayer);
-        }
-    }
+    //private void OnTest(string command, string args)
+    //{
+    //    var test = int.Parse(args);
+    //    QuoteHandler.PlayNaelQuote((QuoteHandler.NaelQuote)test);
+    //}
 
-    private void OnRemoveCommand(string command, string args)
-    {
-        vfxSpawn.DespawnAllVfxes();
-    }
-
-    private void OnReplaceCommand(string command, string args)
-    {
-        resourceLoader.AddFileReplacement(ScdPath, GetResourcePath(PluginInterface, "stack_in.scd"));
-        resourceLoader.AddFileReplacement(VfxPath, GetResourcePath(PluginInterface, "base_vfx.avfx"));
-    }
-
-    private void OnRemoveReplacementCommand(string command, string args)
-    {
-        resourceLoader.RemoveFileReplacement(VfxPath);
-        resourceLoader.RemoveFileReplacement(ScdPath);
-    }
     public static string GetResourcePath(IDalamudPluginInterface pluginInterface, string fileName)
     {
         var resourcesDir = Path.Combine(pluginInterface.AssemblyLocation.Directory?.FullName!, "Resources");
