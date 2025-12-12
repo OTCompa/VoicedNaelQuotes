@@ -7,8 +7,8 @@ Voiced Nael Quotes aims to add voice acting to Nael quotes in The Unending Coil 
 - Directional in-world audio with fall-off
 
 ## How It Works
-The directional audio utilizes a custom VFX (no visuals) with a sound attached to simulate in-world audio. File replacements are done
-through a process based on how Penumbra swaps files on the fly.   
+The directional audio utilizes a custom VFX (no visuals) with a sound attached to simulate in-world audio. The custom VFX is loaded through a process based on Penumbra's
+runtime mod loading/file replacements.
 
 ## How To Use
 This plugin uses the sound effect volume in your game client. Please ensure sound effects are audible in-game.  
@@ -23,6 +23,8 @@ A separate option to support a different in-game audio source is also planned (P
 - Click on the save button on the bottom right corner of the window
 - Type `/xlplugins` in the chatbox or open up Dalamud's plugin installer menu
 - Search for `Voiced Nael Quotes` and install.
+
+Once installed, you can open the config menu through the plugin installer to select one of the available voicepacks. 
 
 ### Building
 1. Open up `VoicedNaelQuotes.sln` in your C# editor of choice (likely [Visual Studio 2022](https://visualstudio.microsoft.com) or [JetBrains Rider](https://www.jetbrains.com/rider/)).
