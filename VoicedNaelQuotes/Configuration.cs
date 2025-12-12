@@ -8,7 +8,7 @@ public class Configuration : IPluginConfiguration
 {
     public int Version { get; set; } = 0;
 
-    public string VoiceLineFolder = "default";
+    public int Voicepack = 0;
 
     // The below exist just to make saving less cumbersome
     public void Save()

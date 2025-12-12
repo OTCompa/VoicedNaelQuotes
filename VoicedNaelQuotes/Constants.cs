@@ -8,6 +8,13 @@ namespace VoicedNaelQuotes;
 
 internal class Constants
 {
+    public enum Voicepack
+    {
+        Default,
+        Teto,
+        Tiktok,
+    }
+
     public const ushort UCoBTerritoryId = 733;
     public const int NaelBaseId = 8161;
 

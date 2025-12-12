@@ -119,7 +119,7 @@ public class QuoteHandler : IDisposable
             Plugin.PluginInterface.AssemblyLocation.Directory?.FullName!,
             "Resources",
             "VoiceLines",
-            plugin.Configuration.VoiceLineFolder,
+            ((Constants.Voicepack)plugin.Configuration.Voicepack).ToString(),
             $"{(int)quote}.scd"
             );
     }

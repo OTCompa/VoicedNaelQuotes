@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using VoicedNaelQuotes.Interop;
 using VoicedNaelQuotes.Windows;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace VoicedNaelQuotes;
 
@@ -33,10 +34,13 @@ public sealed class Plugin : IDalamudPlugin
     private VfxSpawn VfxSpawn { get; init; }
     private ResourceLoader ResourceLoader { get; init; }
     private QuoteHandler QuoteHandler { get; init; }
+    private Random random {  get; init; }
 
     public Plugin()
     {
         Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+
+        random = new Random();
 
         ConfigWindow = new ConfigWindow(this);
 
@@ -111,21 +115,32 @@ public sealed class Plugin : IDalamudPlugin
     }
     private void OnTest(string command, string args)
     {
-        var test = int.Parse(args);
-        if (ObjectTable.LocalPlayer == null) return; 
+        var arg = int.Parse(args);
+        PlayQuote((QuoteHandler.NaelQuote)arg);
+    }
+#endif
+
+    public void SampleQuote()
+    {
+        PlayQuote((QuoteHandler.NaelQuote)random.Next(14));
+    }
+
+    private void PlayQuote(QuoteHandler.NaelQuote quote)
+    {
+        if (ObjectTable.LocalPlayer == null) return;
         var target = ObjectTable.LocalPlayer.TargetObject;
 
         ResourceLoader.AddFileReplacement(Constants.VfxPath, Utility.GetResourcePath(PluginInterface, Constants.LocalVfxFilename));
 
         if (target != null)
         {
-            QuoteHandler.PlayQuote((QuoteHandler.NaelQuote)test, target);
-        } else
+            QuoteHandler.PlayQuote(quote, target);
+        }
+        else
         {
-            QuoteHandler.PlayQuote((QuoteHandler.NaelQuote)test, ObjectTable.LocalPlayer);
+            QuoteHandler.PlayQuote(quote, ObjectTable.LocalPlayer);
         }
     }
-#endif
 
     public void ToggleConfigUi() => ConfigWindow.Toggle();
 }
