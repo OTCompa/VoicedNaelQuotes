@@ -35,6 +35,7 @@ public sealed class Plugin : IDalamudPlugin
     private ResourceLoader ResourceLoader { get; init; }
     private QuoteHandler QuoteHandler { get; init; }
     private Random random {  get; init; }
+    private const string ConfigCommand = "/pvnqconfig";
 
     public Plugin()
     {
@@ -45,6 +46,11 @@ public sealed class Plugin : IDalamudPlugin
         ConfigWindow = new ConfigWindow(this);
 
         WindowSystem.AddWindow(ConfigWindow);
+
+        CommandManager.AddHandler(ConfigCommand, new CommandInfo(ToggleConfigUi)
+        {
+            HelpMessage = "Toggles the configuration window for Voiced Nael Quotes."
+        });
 
 #if DEBUG
         InitDebug();
@@ -79,7 +85,9 @@ public sealed class Plugin : IDalamudPlugin
         // Unregister all actions to not leak anythign during disposal of plugin
         PluginInterface.UiBuilder.Draw -= WindowSystem.Draw;
         PluginInterface.UiBuilder.OpenConfigUi -= ToggleConfigUi;
-        
+
+        CommandManager.RemoveHandler(ConfigCommand);
+
         WindowSystem.RemoveAllWindows();
 
         ConfigWindow.Dispose();
@@ -142,5 +150,6 @@ public sealed class Plugin : IDalamudPlugin
         }
     }
 
+    public void ToggleConfigUi(string command, string args) => ConfigWindow.Toggle();
     public void ToggleConfigUi() => ConfigWindow.Toggle();
 }
