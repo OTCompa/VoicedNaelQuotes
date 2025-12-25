@@ -5,6 +5,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using Lumina.Excel.Sheets;
 using System;
 using System.IO;
 using VoicedNaelQuotes.Interop;
@@ -124,7 +125,23 @@ public sealed class Plugin : IDalamudPlugin
     private void OnTest(string command, string args)
     {
         var arg = int.Parse(args);
+        if (arg >= Enum.GetNames(typeof(QuoteHandler.NaelQuote)).Length) return;
         PlayQuote((QuoteHandler.NaelQuote)arg);
+
+        if (arg < 14)
+        {
+            var npcYell = DataManager.GameData.GetExcelSheet<NpcYell>();
+            if (npcYell == null) return;
+            var quoteNum = arg > 5 ? arg + 2 : arg;
+            var rawQuote = npcYell.GetRow((uint)(6492 + quoteNum));
+            ChatGui.Print($"{rawQuote.Text}");
+        } else
+        {
+            var instanceContentTextData = DataManager.GameData.GetExcelSheet<InstanceContentTextData>();
+            if (instanceContentTextData == null) return;
+            var rawQuote = instanceContentTextData.GetRow((uint)(18100 + arg - 14));
+            ChatGui.Print($"{rawQuote.Text}");
+        }
     }
 #endif
 
