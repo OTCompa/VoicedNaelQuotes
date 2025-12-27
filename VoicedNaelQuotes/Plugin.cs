@@ -1,5 +1,4 @@
 using Dalamud.Game;
-using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.IoC;
@@ -10,7 +9,6 @@ using System;
 using System.IO;
 using VoicedNaelQuotes.Interop;
 using VoicedNaelQuotes.Windows;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace VoicedNaelQuotes;
 
