@@ -41,6 +41,9 @@ public partial class QuoteHandler : IDisposable
             };
             if (!string.IsNullOrEmpty(text))
             {
+                // extra carriage return on japanese
+                // french punctuation adds a no break space
+                text = text.Replace("\r", "").Replace("\u00A0", "");
                 quoteDict[text] = quoteInfo.quote;
             } else
             {
@@ -70,19 +73,24 @@ public partial class QuoteHandler : IDisposable
         if (Plugin.ClientState.TerritoryType != 733) return;
         if (type != XivChatType.NPCDialogueAnnouncements) return;
 
+        var fullText = "";
         foreach (var payload in message.Payloads)
         {
             if (payload is TextPayload { Text: not null } textPayload && naelName.Equals(sender.ToString()))
             {
-                if (quoteDict.TryGetValue(textPayload.Text, out var quote))
-                {
-                    PlayNaelQuote(quote);
-                    Plugin.Log.Debug($"Playing for quote {(int)quote} {quote}: {textPayload.Text}");
-                } else
-                {
-                    Plugin.Log.Debug($"Can't find quote for: {textPayload.Text}");
-                }
+                // french punctuation makes splits the text payloads
+                fullText += textPayload.Text.ToString();
             }
+        }
+
+        if (!string.IsNullOrEmpty(fullText) && quoteDict.TryGetValue(fullText, out var quote))
+        {
+            PlayNaelQuote(quote);
+            Plugin.Log.Debug($"Playing for quote {(int)quote} {quote}: {fullText}");
+        }
+        else
+        {
+            Plugin.Log.Debug($"Can't find quote for: {fullText}");
         }
     }
 

@@ -35,7 +35,7 @@ public sealed class Plugin : IDalamudPlugin
     private VfxSpawn VfxSpawn { get; init; }
     private ResourceLoader ResourceLoader { get; init; }
     private QuoteHandler QuoteHandler { get; init; }
-    private Random random {  get; init; }
+    private Random random { get; init; }
     private const string ConfigCommand = "/pvnqconfig";
 
     public Plugin()
